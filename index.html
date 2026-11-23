@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>The Plexus Puzzle | Interactive Brachial Plexus Challenge</title>
+<style>
+:root{font-family:system-ui,Segoe UI,Arial,sans-serif;color:#17263d;background:#f2f6fb}*{box-sizing:border-box}
+main{max-width:1150px;margin:auto;padding:22px}header{background:#142d50;color:white;padding:24px 28px;border-radius:18px}h1{margin:0 0 7px;font-size:29px}header p{margin:0;color:#dce8f5}
+nav{display:flex;flex-wrap:wrap;gap:9px;margin:20px 0}.tab,button{border:1px solid #c9d5e4;background:white;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:650;color:#173657}.tab.active,.primary{background:#155e9d;color:white;border-color:#155e9d}button:hover{filter:brightness(.95)}button:focus-visible{outline:3px solid #f59e0b}
+.panel{background:white;border:1px solid #d8e2ed;border-radius:16px;padding:20px;margin-bottom:16px}.muted{color:#53667b}.small{font-size:13px}.layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(265px,1fr);gap:16px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}main{padding:10px}}
+svg{width:100%;height:auto;background:#fbfdff;border:1px solid #e1e8f0;border-radius:12px}
+.node{cursor:pointer}.node rect{stroke:#6b8199;stroke-width:1.5;fill:white}.node text{font-size:12px;fill:#20324b;pointer-events:none}.node.selected rect{fill:#fef3c7;stroke:#d97706;stroke-width:2.5}.node.highlight rect{fill:#d7f5e7;stroke:#15956b;stroke-width:2.5}.edge{fill:none;stroke:#b2bfce;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}.edge.anterior{stroke:#e5a64c}.edge.posterior{stroke:#9b83d7}.edge.highlight{stroke:#08966e;stroke-width:5}.edge.dim{opacity:.13}.node.dim{opacity:.3}#graphBuild .node.hidden-build,#graphBuild .edge.hidden-build{visibility:hidden}
+.options{display:grid;gap:8px}.options button{text-align:left;font-weight:500}.options button.chosen{border:2px solid #155e9d;background:#eaf4ff}.options button.correct-answer{background:#d9f5e3;border:2px solid #17844d;color:#125b36;font-weight:750}.options button.wrong-answer{background:#ffeded;border:2px solid #c75555;color:#8c2828}.options button:disabled{cursor:default;opacity:1}.feedback{margin-top:12px;padding:12px;border-radius:10px;background:#edf4fc;min-height:44px}.good{background:#e6f6ed}.bad{background:#fff2e9}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin:10px 0}.dot{width:13px;height:13px;display:inline-block;border-radius:50%;vertical-align:middle;margin-right:4px}
+footer{font-size:13px;color:#50647a;padding:12px 4px}a{color:#145d99}#content>section{display:none}#content>section.active{display:block}select{width:100%;padding:10px;border-radius:8px;border:1px solid #b9c8d8;background:white;font-size:15px} .tag{display:inline-block;border-radius:6px;padding:3px 7px;background:#e7eef7;font-size:12px;font-weight:650}
+
+
+
+/* Visual refresh: presentation only; anatomy graph and quiz logic unchanged */
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#20334d;background:#f4f7fc}
+body{margin:0;background:radial-gradient(circle at 8% 0%,#e5efff 0,transparent 32%),radial-gradient(circle at 100% 20%,#e7f7f5 0,transparent 30%),#f4f7fc;min-height:100vh}
+main{max-width:1220px;padding:28px 24px 52px}
+header{position:relative;overflow:hidden;border-radius:24px;padding:36px 42px 34px;background:linear-gradient(115deg,#112849 0%,#193e68 58%,#176b79 100%);box-shadow:0 16px 34px rgba(25,56,96,.16)}
+header:before{content:"";position:absolute;width:310px;height:310px;right:-95px;top:-120px;border:1px solid rgba(255,255,255,.18);border-radius:50%;box-shadow:0 0 0 42px rgba(255,255,255,.035),0 0 0 94px rgba(255,255,255,.025);pointer-events:none}
+header:after{content:"";position:absolute;right:105px;bottom:-55px;width:130px;height:130px;border:2px dashed rgba(180,236,231,.22);border-radius:50%;pointer-events:none}
+header h1{font-size:clamp(32px,4.3vw,52px);letter-spacing:-1.7px;line-height:1.1;margin:9px 0 12px;font-weight:800;position:relative}
+header h1 span{color:#a7f1df}
+header p{font-size:15px;line-height:1.6;max-width:680px;color:#d9eaf5;position:relative}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;color:#a8e8e5;position:relative}
+nav{background:#fff;padding:9px;border-radius:17px;border:1px solid #e0e9f4;box-shadow:0 5px 18px rgba(34,69,103,.05);gap:6px;margin:20px 0 22px}
+.tab{flex:1;white-space:nowrap;min-width:130px;border:0;border-radius:11px;padding:13px 12px;background:transparent;color:#536781;font-size:13px;transition:background .15s,color .15s,transform .15s}
+.tab.active{background:#164f83;color:#fff;box-shadow:0 5px 12px rgba(22,79,131,.19)}
+.tab:hover:not(.active){background:#eef5fb;transform:translateY(-1px)}
+.panel{background:#fff;border:1px solid #e2e9f2;border-radius:19px;padding:26px;margin-bottom:16px;box-shadow:0 8px 24px rgba(32,69,110,.045)}
+.panel .panel{background:#f8fbff;box-shadow:none;border:1px solid #e4edf6}
+h2{margin:0 0 10px;font-size:24px;letter-spacing:-.5px;color:#163453}h3{color:#1b4266;letter-spacing:-.25px}
+.muted{line-height:1.65;color:#61748a}p{line-height:1.55}
+svg{background:linear-gradient(145deg,#fff,#f6faff);border:1px solid #e0e9f3;border-radius:14px;box-shadow:inset 0 0 0 1px #fff}
+.node rect{stroke:#90a7bb;fill:#fff;filter:drop-shadow(0 1px 1px rgba(0,0,0,.04))}
+.node.highlight rect{fill:#d6f7e9;stroke:#158b68}
+.node.selected rect{fill:#fff0ce;stroke:#d99228}
+button{transition:background .15s,transform .15s,box-shadow .15s}button:not(:disabled):hover{transform:translateY(-1px)}
+.primary{background:#155c91;border-color:#155c91;box-shadow:0 3px 8px rgba(18,80,132,.14)}
+.options button{border:1px solid #dbe5f0;background:#fbfdff;padding:13px 15px;border-radius:11px;line-height:1.4}
+.options button:hover:not(:disabled){border-color:#7ca5c7;background:#f2f8fe}
+.options button.correct-answer{background:#dcf8e8;border:2px solid #168552;color:#155a38}
+.options button.wrong-answer{background:#fff0ef;border:2px solid #c95d58;color:#8c2929}
+.feedback{border:1px solid #dce8f4;background:#f2f7fd;border-radius:12px;line-height:1.6}
+.feedback.good{background:#e7f8ef;border-color:#bfead1}.feedback.bad{background:#fff3eb;border-color:#f4d9c5}
+.tag{background:#e8f2fc;color:#255b87;border-radius:99px;padding:6px 11px;font-size:12px}
+select{border-radius:11px;border:1px solid #cddceb;padding:12px}
+@media(max-width:800px){main{padding:12px 12px 32px}header{padding:28px 22px}.panel{padding:17px}nav{gap:4px}.tab{min-width:105px;font-size:12px;padding:11px 8px}}
+@media(prefers-reduced-motion:reduce){button,.tab{transition:none!important}}
+
+#completionStatus{font-size:13px;color:#47627d;margin:-8px 4px 18px;font-weight:650}
+#celebration{position:fixed;inset:0;z-index:1000;background:rgba(11,32,57,.72);display:none;align-items:center;justify-content:center;padding:20px}
+#celebration.visible{display:flex}
+#confettiCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.celebrate-card{position:relative;z-index:1;max-width:520px;width:100%;background:white;border-radius:26px;padding:40px 28px;text-align:center;box-shadow:0 30px 85px #091c3677}
+.celebrate-card h2{font-size:clamp(28px,5vw,42px);color:#174b77;margin:8px 0}
+.celebrate-card p{font-size:18px;color:#52657b}
+.celebrate-card .sparkle{font-size:42px}
+@media(prefers-reduced-motion:reduce){#confettiCanvas{display:none}}
+
+/* Color-coded anatomical structure groups across Explore, Build and Trace */
+.node[data-id="C5"] rect,.node[data-id="C6"] rect,.node[data-id="C7"] rect,.node[data-id="C8"] rect,.node[data-id="T1"] rect{fill:#dceeff;stroke:#3983b9}
+.node[data-id="upper"] rect,.node[data-id="middle"] rect,.node[data-id="lower"] rect{fill:#d9f3e7;stroke:#339a73}
+.node[data-id="ua"] rect,.node[data-id="ma"] rect,.node[data-id="la"] rect{fill:#fff0d2;stroke:#df9b35}
+.node[data-id="up"] rect,.node[data-id="mp"] rect,.node[data-id="lp"] rect{fill:#e9ddff;stroke:#9371ce}
+.node[data-id="lateral"] rect,.node[data-id="posterior"] rect,.node[data-id="medial"] rect{fill:#fbe1e8;stroke:#c96b8a}
+.node[data-id="musculo"] rect,.node[data-id="axillary"] rect,.node[data-id="median"] rect,.node[data-id="radial"] rect,.node[data-id="ulnar"] rect{fill:#d8f1f5;stroke:#4c9eae}
+.node.selected rect{stroke:#172b46;stroke-width:3.5;filter:drop-shadow(0 0 3px #172b4666)}
+.node.highlight rect{stroke:#11815d;stroke-width:3.5;filter:drop-shadow(0 0 3px #11815d66)}
+[hidden]{display:none!important}
+</style></head><body><main><header><h1>The <span>Plexus Puzzle</span></h1><p>An original interactive brachial plexus activity</p></header>
+<nav aria-label="Activities"><button class="tab active" data-tab="explore">Explore It</button><button class="tab" data-tab="build">Build It</button><button class="tab" data-tab="trace">Trace It</button><button class="tab" data-tab="apply">Apply It</button><button class="tab" data-tab="clinical">Clinical Cases</button></nav>
+<div id="completionStatus" role="status" aria-live="polite">Activities completed: 0 of 5</div>
+<div id="content">
+<section class="active" id="explore"><div class="panel"><h2>Explore the Brachial Plexus</h2><p class="muted">Click any labeled structure to learn about it and see which structures connect to it.</p><div class="layout"><div><div id="graphExplore"></div><div class="legend"><span><i class="dot" style="background:#e5a64c"></i>Anterior divisions</span><span><i class="dot" style="background:#9b83d7"></i>Posterior divisions</span><span><i class="dot" style="background:#08966e"></i>Selected pathway</span></div></div><div class="panel" style="margin:0"><h3 id="exploreTitle">Select a structure</h3><p id="exploreInfo">The brachial plexus is formed by the ventral rami of spinal nerves C5–T1.</p><button id="resetExplore">Clear selection</button><button class="primary" id="nextExplore" hidden>Move on to Build It</button></div></div></div></section>
+<section id="build"><div class="panel"><h2>Build It: Connect the Plexus Yourself</h2><p>Select a structure on the left, then select the structure it connects to on the right. Correct connections stay on your diagram; incorrect connections do not. Complete each anatomical stage to unlock the next.</p><div class="layout"><div><div id="graphBuild"></div><div class="legend" aria-label="Structure colors"><span><i class="dot" style="background:#3983b9"></i>Roots</span><span><i class="dot" style="background:#339a73"></i>Trunks</span><span><i class="dot" style="background:#df9b35"></i>Anterior divisions</span><span><i class="dot" style="background:#9371ce"></i>Posterior divisions</span><span><i class="dot" style="background:#c96b8a"></i>Cords</span><span><i class="dot" style="background:#4c9eae"></i>Terminal nerves</span></div><p class="small muted">Click two labeled boxes to connect them. You can also use Tab and Enter to select boxes.</p></div><div><span class="tag" id="buildProgress"></span><h3 id="buildPrompt">Roots → trunks</h3><p id="buildInstructions"></p><div aria-live="polite" class="feedback" id="buildFeedback">Select a structure on the left, then the structure it connects to on the right.</div><p><button class="primary" hidden id="nextBuild">Continue to next stage</button> <button id="restartBuild">Start over</button></p></div></div></div></section>
+<section id="trace"><div class="panel"><h2>Trace It: Follow a Terminal Nerve</h2><p class="muted">Click a terminal nerve in the diagram to highlight its contributing roots and pathways. The median nerve receives contributions from both the lateral and medial cords.</p><div class="layout"><div id="graphTrace"></div><div><p class="muted"><b>Select a terminal nerve on the diagram.</b></p><h3 id="traceName"></h3><p id="traceDetail"></p><p><button class="primary" id="nextTrace" hidden>Move on to Apply It</button></p></div></div></div></section>
+<section id="apply"><div class="panel"><h2>Apply It: Nerves, Muscles &amp; Movement</h2><p class="muted">Connect nerve supply, muscle actions, and movement changes following nerve injuries.</p><div class="layout"><div><span class="tag" id="caseProgress"></span><h3 id="casePrompt"></h3><div class="options" id="caseOptions"></div><div aria-live="polite" class="feedback" id="caseFeedback">Choose a response.</div><p><button class="primary" disabled="" id="nextCase">Next question</button> <button id="restartCase">Restart</button> <button class="primary" id="nextApply" hidden>Move on to Clinical Cases</button></p></div></div></div></section>
+<section id="clinical"><div class="panel"><h2>Clinical Cases: Think Like a Clinician</h2><p class="muted">Read each patient scenario and use your knowledge of the brachial plexus to identify the likely affected nerve or movement. You have two attempts per question.</p><span class="tag" id="clinicalProgress"></span><h3 id="clinicalPrompt"></h3><div class="options" id="clinicalOptions"></div><div aria-live="polite" class="feedback" id="clinicalFeedback">Choose a response.</div><p><button class="primary" disabled id="nextClinical">Next case</button> <button id="restartClinical">Restart cases</button></p></div></section>
+</div></main>
+<div id="celebration" role="dialog" aria-modal="true" aria-labelledby="celebrateTitle" aria-hidden="true">
+<canvas id="confettiCanvas" aria-hidden="true"></canvas>
+<div class="celebrate-card"><div class="sparkle" aria-hidden="true">🎉</div><h2 id="celebrateTitle">Nice work learning the brachial plexus!</h2><p>Professor G is proud of you!</p><button class="primary" id="closeCelebration">Keep exploring</button></div>
+</div>
+<script>
+"use strict";
+const activityComplete={explore:false,build:false,trace:false,apply:false,clinical:false};
+let celebrationShown=false, confettiFrame=null;
+function updateCompletionDisplay(){
+ const count=Object.values(activityComplete).filter(Boolean).length;
+ document.getElementById("completionStatus").textContent=`Activities completed: ${count} of 5`;
+ document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-label",b.textContent+(activityComplete[b.dataset.tab]?", completed":"")));
+}
+function resetActivityComplete(name){
+ if(!activityComplete[name])return;
+ activityComplete[name]=false;
+ celebrationShown=false;
+ updateCompletionDisplay();
+}
+function markActivityComplete(name){
+ if(activityComplete[name])return;
+ activityComplete[name]=true;
+ const count=Object.values(activityComplete).filter(Boolean).length;
+ document.getElementById("completionStatus").textContent=`Activities completed: ${count} of 5`;
+ document.querySelectorAll(".tab").forEach(b=>{
+  const done=activityComplete[b.dataset.tab];
+  b.setAttribute("aria-label",b.textContent+(done?", completed":""));
+ });
+ if(count===5&&!celebrationShown){celebrationShown=true;showCelebration()}
+}
+function showCelebration(){
+ const overlay=document.getElementById("celebration");
+ overlay.classList.add("visible");overlay.setAttribute("aria-hidden","false");
+ document.getElementById("closeCelebration").focus();
+ if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+ const canvas=document.getElementById("confettiCanvas"),ctx=canvas.getContext("2d");
+ const dpr=Math.min(window.devicePixelRatio||1,2);
+ const w=window.innerWidth,h=window.innerHeight;
+ canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+ const colors=["#1b7fb2","#16b59c","#f3b947","#ec6c9c","#8557c7","#ffffff"];
+ const pieces=Array.from({length:190},()=>({x:Math.random()*w,y:-Math.random()*h*.85-20,vx:(Math.random()-.5)*5,vy:2.5+Math.random()*4.8,spin:Math.random()*6.28,rate:(Math.random()-.5)*.25,size:5+Math.random()*8,color:colors[Math.floor(Math.random()*colors.length)]}));
+ let frame=0;
+ function animate(){ctx.clearRect(0,0,w,h);for(const p of pieces){p.x+=p.vx;p.y+=p.vy;p.spin+=p.rate;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.spin);ctx.fillStyle=p.color;ctx.fillRect(-p.size/2,-p.size/3,p.size,p.size*.65);ctx.restore()}if(++frame<260&&overlay.classList.contains("visible"))confettiFrame=requestAnimationFrame(animate)}
+ animate();
+}
+function closeCelebration(){const overlay=document.getElementById("celebration");overlay.classList.remove("visible");overlay.setAttribute("aria-hidden","true");if(confettiFrame!==null)cancelAnimationFrame(confettiFrame);document.getElementById("confettiCanvas").getContext("2d").clearRect(0,0,window.innerWidth,window.innerHeight);document.querySelector('.tab.active').focus()}
+document.getElementById("closeCelebration").onclick=closeCelebration;
+document.getElementById("celebration").addEventListener("keydown",e=>{if(e.key==="Escape")closeCelebration()});
+const nodes=[
+{id:"C5",x:14,y:48,label:"C5"},{id:"C6",x:14,y:103,label:"C6"},{id:"C7",x:14,y:173,label:"C7"},{id:"C8",x:14,y:243,label:"C8"},{id:"T1",x:14,y:298,label:"T1"},
+{id:"upper",x:124,y:77,label:"Superior"},{id:"middle",x:124,y:173,label:"Middle"},{id:"lower",x:124,y:270,label:"Inferior"},
+{id:"ua",x:244,y:45,label:"Anterior"},{id:"up",x:244,y:100,label:"Posterior"},{id:"ma",x:244,y:145,label:"Anterior"},{id:"mp",x:244,y:200,label:"Posterior"},{id:"la",x:244,y:245,label:"Anterior"},{id:"lp",x:244,y:300,label:"Posterior"},
+{id:"lateral",x:367,y:101,label:"Lateral"},{id:"posterior",x:367,y:200,label:"Posterior"},{id:"medial",x:367,y:294,label:"Medial"},
+{id:"musculo",x:504,y:40,label:"Musculocutaneous"},{id:"axillary",x:504,y:104,label:"Axillary"},{id:"median",x:504,y:172,label:"Median"},{id:"radial",x:504,y:244,label:"Radial"},{id:"ulnar",x:504,y:311,label:"Ulnar"}];
+const edges=[["C5","upper"],["C6","upper"],["C7","middle"],["C8","lower"],["T1","lower"],
+["upper","ua"],["upper","up"],["middle","ma"],["middle","mp"],["lower","la"],["lower","lp"],
+["ua","lateral"],["ma","lateral"],["la","medial"],["up","posterior"],["mp","posterior"],["lp","posterior"],
+["lateral","musculo"],["lateral","median"],["medial","median"],["medial","ulnar"],["posterior","axillary"],["posterior","radial"]];
+const byId=Object.fromEntries(nodes.map(n=>[n.id,n]));
+const details={
+C5:"Ventral ramus of the C5 spinal nerve. Joins C6 to form the superior trunk.",C6:"Ventral ramus of the C6 spinal nerve. Joins C5 to form the superior trunk.",C7:"Ventral ramus of C7. Continues as the middle trunk.",C8:"Ventral ramus of C8. Joins T1 to form the inferior trunk.",T1:"Ventral ramus of T1. Joins C8 to form the inferior trunk.",
+upper:"Superior trunk: C5 and C6. Divides into anterior and posterior divisions.",middle:"Middle trunk: C7. Divides into anterior and posterior divisions.",lower:"Inferior trunk: C8 and T1. Divides into anterior and posterior divisions.",
+ua:"Anterior division of the superior trunk; joins middle anterior division to form lateral cord.",ma:"Anterior division of the middle trunk; joins superior anterior division to form lateral cord.",la:"Anterior division of the inferior trunk; forms medial cord.",up:"Posterior division of superior trunk; contributes to posterior cord.",mp:"Posterior division of middle trunk; contributes to posterior cord.",lp:"Posterior division of inferior trunk; contributes to posterior cord.",
+lateral:"Receives anterior divisions of superior and middle trunks. Gives musculocutaneous nerve and lateral contribution to median.",medial:"Continuation of anterior division of inferior trunk. Gives ulnar nerve and medial contribution to median.",posterior:"Receives posterior divisions of all three trunks. Gives axillary and radial nerves.",
+musculo:"Musculocutaneous nerve: from lateral cord. Innervates biceps brachii, brachialis, and coracobrachialis.",axillary:"Axillary nerve: from posterior cord. Innervates the deltoid.",radial:"Radial nerve: from posterior cord. Innervates triceps brachii, brachioradialis, and wrist extensor muscles.",median:"Median nerve: Receives contributions from the lateral and medial cords. Innervates most anterior forearm flexors and thenar muscles.",ulnar:"Ulnar nerve: from medial cord. Innervates flexor carpi ulnaris, the medial half of flexor digitorum profundus, and most intrinsic hand muscles."};
+function center(id){let n=byId[id];return [n.x+ (id==="musculo"?69:id==="axillary"||id==="median"||id==="radial"||id==="ulnar"?69:40),n.y+17]}
+function renderGraph(target,click){
+let svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("viewBox","0 0 670 365");svg.setAttribute("role","img");svg.setAttribute("aria-label","Interactive schematic of the brachial plexus, arranged left to right from C5–T1 roots to terminal nerves.");
+const labels=[["ROOTS",15],["TRUNKS",124],["DIVISIONS",244],["CORDS",367],["TERMINAL NERVES",504]];
+labels.forEach(([t,x])=>{let z=document.createElementNS(svg.namespaceURI,"text");z.setAttribute("x",x);z.setAttribute("y",17);z.setAttribute("font-size","11");z.setAttribute("font-weight","700");z.setAttribute("fill","#53667b");z.textContent=t;svg.append(z)});
+edges.forEach(([a,b],i)=>{let p=document.createElementNS(svg.namespaceURI,"path");let [x1,y1]=center(a),[x2,y2]=center(b);let dx=(x2-x1)*.52;p.setAttribute("d",`M${x1} ${y1} C${x1+dx} ${y1},${x2-dx} ${y2},${x2} ${y2}`);p.setAttribute("class","edge "+(["ua","ma","la"].includes(a)||["ua","ma","la"].includes(b)?"anterior":(["up","mp","lp"].includes(a)||["up","mp","lp"].includes(b)?"posterior":"")));p.dataset.a=a;p.dataset.b=b;svg.append(p)});
+nodes.forEach(n=>{let g=document.createElementNS(svg.namespaceURI,"g");g.setAttribute("class","node");g.dataset.id=n.id;g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label",n.label+" "+(details[n.id]||""));let r=document.createElementNS(svg.namespaceURI,"rect");let w=n.x>=504?140:80;r.setAttribute("x",n.x);r.setAttribute("y",n.y);r.setAttribute("width",w);r.setAttribute("height",34);r.setAttribute("rx",7);let t=document.createElementNS(svg.namespaceURI,"text");t.setAttribute("x",n.x+w/2);t.setAttribute("y",n.y+21);t.setAttribute("text-anchor","middle");t.setAttribute("font-size",n.x>=504?"11":"12");t.textContent=n.label;g.append(r,t);if(click){g.addEventListener("click",()=>click(n.id));g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();click(n.id)}})}svg.append(g)});
+document.getElementById(target).replaceChildren(svg);return svg}
+function mark(svg,ids,edgeList){svg.querySelectorAll(".node").forEach(n=>{n.classList.toggle("highlight",ids.has(n.dataset.id));n.classList.toggle("dim",ids.size>0&&!ids.has(n.dataset.id))});svg.querySelectorAll(".edge").forEach(e=>{let hit=edgeList.some(([a,b])=>a===e.dataset.a&&b===e.dataset.b);e.classList.toggle("highlight",hit);e.classList.toggle("dim",ids.size>0&&!hit)})}
+const exploredStructures=new Set();
+const explore=renderGraph("graphExplore",id=>{
+ exploredStructures.add(id);
+ if(exploredStructures.size===nodes.length){markActivityComplete("explore");document.getElementById("nextExplore").hidden=false;}
+ let es=edges.filter(e=>e.includes(id));mark(explore,new Set([id,...es.flat()]),es);document.getElementById("exploreTitle").textContent=byId[id].label;document.getElementById("exploreInfo").textContent=details[id]
+});
+document.getElementById("resetExplore").onclick=()=>{mark(explore,new Set(),[]);document.getElementById("exploreTitle").textContent="Select a structure";document.getElementById("exploreInfo").textContent="Click a structure to explore its immediate connections."};
+const stageGroups=[
+ {title:"Roots → trunks",start:0,end:5,source:["C5","C6","C7","C8","T1"],dest:["upper","middle","lower"],help:"Connect each of the five roots to its correct trunk. Some trunks receive more than one root."},
+ {title:"Trunks → divisions",start:5,end:11,source:["upper","middle","lower"],dest:["ua","up","ma","mp","la","lp"],help:"Each trunk divides into one anterior and one posterior division. Connect each trunk to its labeled anterior and posterior divisions."},
+ {title:"Divisions → cords",start:11,end:17,source:["ua","up","ma","mp","la","lp"],dest:["lateral","posterior","medial"],help:"Connect the six divisions to their cords. Notice how the posterior divisions converge."},
+ {title:"Cords → terminal nerves",start:17,end:23,source:["lateral","posterior","medial"],dest:["musculo","axillary","median","radial","ulnar"],help:"Connect the cords to the five terminal nerves. One terminal nerve receives two separate contributions."}
+];
+let buildStage=0,buildFirst=null,buildMistakes=0,completedBuild=[],pendingDivision=null;
+const divisionIds=new Set(["ua","up","ma","mp","la","lp"]);
+const identifiedDivisions=new Set();
+const build=renderGraph("graphBuild",chooseBuildNode);
+function sameEdge(a,b,e){return e[0]===a&&e[1]===b}
+function drawBuild(){
+ const st=stageGroups[buildStage],visible=new Set([...st.source,...st.dest,...completedBuild.flat()]);
+ build.querySelectorAll(".node").forEach(n=>{n.classList.toggle("hidden-build",!visible.has(n.dataset.id));n.classList.toggle("selected",n.dataset.id===buildFirst);n.classList.remove("dim","highlight");if(divisionIds.has(n.dataset.id)){const reveal=true;n.querySelector("text").textContent=reveal?byId[n.dataset.id].label:"?";n.setAttribute("aria-label",reveal?byId[n.dataset.id].label:"Unidentified division");n.classList.toggle("identified-anterior",["ua","ma","la"].includes(n.dataset.id));n.classList.toggle("identified-posterior",["up","mp","lp"].includes(n.dataset.id));}});
+ build.querySelectorAll(".edge").forEach(e=>{e.classList.toggle("hidden-build",!completedBuild.some(([a,b])=>sameEdge(a,b,[e.dataset.a,e.dataset.b])));e.classList.remove("dim","highlight")});
+ const done=completedBuild.filter(([a,b])=>edges.slice(st.start,st.end).some(e=>sameEdge(a,b,e))).length;
+ document.getElementById("buildProgress").textContent=`Stage ${buildStage+1} of 4 · ${done}/${st.end-st.start} connections · ${buildMistakes} retries`;
+ document.getElementById("buildPrompt").textContent=st.title;
+ document.getElementById("buildInstructions").textContent=st.help;
+ document.getElementById("nextBuild").hidden=done!==st.end-st.start;
+ document.getElementById("nextBuild").textContent=buildStage===3?"Move on to Trace It":"Continue to next stage";
+ if(done===st.end-st.start){if(buildStage===3&&completedBuild.length===23)markActivityComplete("build");document.getElementById("buildFeedback").className="feedback good";document.getElementById("buildFeedback").textContent=buildStage===3?"Excellent! You built all 23 connections, including both contributions to the median nerve.":"Stage complete! Continue when ready."}
+}
+function chooseBuildNode(id){
+ const st=stageGroups[buildStage],feedback=document.getElementById("buildFeedback");
+ if(pendingDivision)return;
+ if(!st.source.includes(id)&&!st.dest.includes(id))return;
+ if(buildFirst===null){if(!st.source.includes(id)){feedback.className="feedback bad";feedback.textContent="Start by selecting a structure on the left.";return}buildFirst=id;feedback.className="feedback";feedback.textContent=`Selected ${byId[id].label}. Now select the structure it connects to.`;drawBuild();return}
+ if(id===buildFirst){buildFirst=null;feedback.textContent="Selection cleared. Choose a structure on the left.";drawBuild();return}
+ if(st.source.includes(id)){buildFirst=id;feedback.textContent=`Selected ${byId[id].label}. Choose the structure it connects to.`;drawBuild();return}
+ const candidate=[buildFirst,id],allowed=edges.slice(st.start,st.end).some(e=>sameEdge(e[0],e[1],candidate));
+ if(allowed&&!completedBuild.some(e=>sameEdge(e[0],e[1],candidate))){completedBuild.push(candidate);feedback.className="feedback good";feedback.textContent=`Correct: ${byId[buildFirst].label} → ${byId[id].label}.`}
+ else if(allowed){feedback.className="feedback";feedback.textContent="That connection is already on your diagram."}
+ else{buildMistakes++;feedback.className="feedback bad";feedback.textContent=`Those structures do not connect directly in the standard brachial plexus. Try another connection.`}
+ buildFirst=null;drawBuild();
+}
+document.getElementById("nextBuild").onclick=()=>{if(buildStage===3){if(!activityComplete.build)return;document.querySelector('.tab[data-tab="trace"]').click();return}if(buildStage<3){buildStage++;buildFirst=null;pendingDivision=null;document.getElementById("buildFeedback").className="feedback";document.getElementById("buildFeedback").textContent="Select a structure on the left to begin this stage.";drawBuild()}};
+document.getElementById("restartBuild").onclick=()=>{resetActivityComplete("build");buildStage=0;buildFirst=null;buildMistakes=0;completedBuild=[];pendingDivision=null;identifiedDivisions.clear();document.getElementById("buildFeedback").className="feedback";document.getElementById("buildFeedback").textContent="Select a root and connect it to its trunk.";drawBuild()};
+drawBuild();
+const trace=renderGraph("graphTrace",id=>{if(["musculo","axillary","radial","median","ulnar"].includes(id))showTrace(id)});
+const buildQs=[
+["Which roots form the superior trunk?",["C5 + C6","C7 + C8","C8 + T1"],0,"C5 and C6 unite to form the superior trunk.",["C5","C6","upper"]],
+["Which root continues as the middle trunk?",["C6","C7","T1"],1,"C7 continues as the middle trunk.",["C7","middle"]],
+["Which roots form the inferior trunk?",["C5 + C6","C8 + T1","C7 + T1"],1,"C8 and T1 form the inferior trunk.",["C8","T1","lower"]],
+["How many divisions arise from each trunk?",["One anterior only","One anterior and one posterior","Two posterior"],1,"Each trunk divides into one anterior and one posterior division.",["upper","ua","up"]],
+["Which divisions form the lateral cord?",["Superior and middle anterior","All posterior","Inferior anterior only"],0,"Superior and middle anterior divisions form the lateral cord.",["ua","ma","lateral"]],
+["Which division forms the medial cord?",["Middle posterior","Inferior anterior","Superior anterior"],1,"The inferior trunk's anterior division forms the medial cord.",["la","medial"]],
+["Which divisions form the posterior cord?",["All three posterior divisions","All three anterior divisions","Only the superior posterior"],0,"All three posterior divisions contribute.",["up","mp","lp","posterior"]],
+["Which nerve receives contributions from TWO cords?",["Radial","Ulnar","Median"],2,"Median nerve receives contributions from both lateral and medial cords.",["lateral","medial","median"]],
+["Which cord gives rise to the radial nerve?",["Posterior","Lateral","Medial"],0,"Radial nerve is a terminal branch of the posterior cord.",["posterior","radial"]],
+["Which cord gives rise to the musculocutaneous nerve?",["Medial","Lateral","Posterior"],1,"Musculocutaneous nerve is a terminal branch of the lateral cord.",["lateral","musculo"]],
+["Which cord gives rise to the axillary nerve?",["Lateral","Posterior","Medial"],1,"Axillary nerve is a terminal branch of the posterior cord.",["posterior","axillary"]],
+["Which cord gives rise to the ulnar nerve?",["Medial","Posterior","Lateral"],0,"Ulnar nerve is a terminal branch of the medial cord.",["medial","ulnar"]]
+];
+const cases=[
+["Which nerve innervates the deltoid?",["Axillary","Median","Radial","Ulnar"],0,"The axillary nerve supplies the deltoid."],
+["Which nerve innervates the biceps brachii?",["Radial","Musculocutaneous","Axillary","Median"],1,"The musculocutaneous nerve supplies biceps brachii."],
+["Which nerve innervates the triceps brachii?",["Axillary","Median","Radial","Musculocutaneous"],2,"The radial nerve supplies triceps brachii."],
+["Which nerve innervates flexor carpi radialis?",["Ulnar","Median","Radial","Axillary"],1,"The median nerve supplies flexor carpi radialis."],
+["What movement does brachialis produce?",["Elbow extension","Wrist extension","Elbow flexion","Shoulder abduction"],2,"Brachialis flexes the elbow."],
+["A patient experiences damage to the radial nerve. Which muscle group and its associated movement would most likely be affected?",["Biceps brachii: elbow flexion","Deltoid: shoulder abduction","Arm extensors: elbow extension","Thenar muscles: thumb opposition"],2,"The radial nerve supplies arm and forearm extensor muscles and contributes to elbow, wrist, and finger extension."],
+["Which nerve supplies brachioradialis?",["Median","Radial","Axillary","Ulnar"],1,"The radial nerve innervates brachioradialis, which assists forearm flexion when the forearm is partially flexed and semipronated."],
+["Which muscle is innervated by the musculocutaneous nerve and assists with shoulder flexion and adduction?",["Deltoid","Triceps brachii","Coracobrachialis","Brachioradialis"],2,"Coracobrachialis is innervated by the musculocutaneous nerve and contributes to shoulder flexion and adduction."],
+["Which nerve supplies the extensor carpi radialis longus?",["Radial","Median","Ulnar","Axillary"],0,"The radial nerve supplies extensor carpi radialis longus, a wrist extensor."],
+["Which terminal nerve receives contributions from both the lateral and medial cords?",["Axillary","Ulnar","Musculocutaneous","Median"],3,"The median nerve receives contributions from the lateral and medial cords."]
+];
+const clinicalCases=[
+["Following a shoulder dislocation, a patient has an axillary nerve injury. Which movement is most likely weakened?",["Elbow extension","Shoulder abduction","Wrist flexion","Forearm pronation"],1,"The axillary nerve supplies the deltoid, which contributes to shoulder abduction. Other muscles may still permit some abduction."],
+["A patient injures the musculocutaneous nerve, affecting biceps brachii and brachialis. Which movement is most likely weakened?",["Elbow extension","Wrist extension","Elbow flexion","Shoulder abduction"],2,"Biceps brachii and brachialis flex the elbow. Other muscles can contribute, so flexion is not necessarily absent."],
+["A proximal radial nerve injury affects the branch supplying triceps brachii. Which movement is most likely weakened?",["Elbow extension","Elbow flexion","Shoulder flexion","Wrist flexion"],0,"The radial nerve supplies triceps brachii, the primary elbow extensor. A more distal radial injury may spare triceps."],
+["A patient has a radial nerve injury affecting the wrist extensors. Which finding is most likely?",["Weak wrist flexion","Weak shoulder abduction","Weak wrist extension","Weak elbow flexion"],2,"Radial nerve injury can weaken the extensor carpi muscles and produce difficulty extending the wrist."],
+["A patient experiences an injury to the ulnar nerve. Which movement would most likely be impaired?",["Shoulder abduction","Forearm supination","Thumb opposition","Finger abduction and adduction"],3,"The ulnar nerve supplies most intrinsic hand muscles and contributes to finger abduction and adduction."],
+["A patient has difficulty flexing the elbow and supinating the forearm after an injury to the nerve supplying biceps brachii. Which nerve is most likely affected?",["Axillary","Musculocutaneous","Ulnar","Radial"],1,"The musculocutaneous nerve supplies biceps brachii, which flexes the elbow and supinates the forearm."],
+["After an injury to the axillary nerve, which sensory region would most likely be affected?",["Lateral shoulder","Little finger","Lateral forearm","Palmar index finger"],0,"The axillary nerve supplies sensation over the lateral shoulder."],
+["A patient has reduced sensation over the lateral forearm following a nerve injury. Which terminal nerve is most likely involved?",["Ulnar","Radial","Musculocutaneous","Axillary"],2,"The musculocutaneous nerve provides sensation to the lateral forearm."],
+["A patient loses sensation over the little finger and medial half of the ring finger. Which terminal nerve is most likely affected?",["Median","Axillary","Radial","Ulnar"],3,"The ulnar nerve provides sensation to the little finger, medial half of the ring finger, and medial hand."]
+];
+
+function shuffle(items){const out=[...items];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out}
+function quiz(prefix,questions){
+ const prepare=()=>shuffle(questions).slice(0,5).map(q=>{const opts=shuffle(q[1].map((label,i)=>({label,correct:i===q[2]})));return [q[0],opts.map(x=>x.label),opts.findIndex(x=>x.correct),q[3],q[4]]});
+ let activeQuestions=prepare();
+ let idx=0,score=0,locked=false,wrongGuesses=0;
+ const $=id=>document.getElementById(id);
+ const nextId=prefix==="build"?"nextBuild":prefix==="clinical"?"nextClinical":"nextCase";
+ const restartId=prefix==="build"?"restartBuild":prefix==="clinical"?"restartClinical":"restartCase";
+ function advanceAfterAnswer(){
+  if(idx===activeQuestions.length-1){
+   // Keep final-answer feedback visible and finish without a redundant Next button.
+   $(nextId).hidden=true;
+   markActivityComplete(prefix==="clinical"?"clinical":"apply");
+   if(prefix==="case")$("nextApply").hidden=false;
+   $(prefix+"Progress").textContent=`Complete · ${score} of ${activeQuestions.length} correct`;
+  }else $(nextId).disabled=false;
+ }
+ function show(){
+  locked=false;wrongGuesses=0;
+  $(nextId).hidden=false;
+  if(prefix==="case")$("nextApply").hidden=true;
+  if(prefix==="build")drawBuild();
+  $(prefix+"Progress").textContent=`Question ${idx+1} of ${activeQuestions.length} · ${score} correct`;
+  $(prefix+"Prompt").textContent=activeQuestions[idx][0];
+  $(prefix+"Feedback").className="feedback";
+  $(prefix+"Feedback").textContent=prefix!=="build"?"You have two attempts. Select an answer.":"Choose an answer.";
+  $(nextId).disabled=true;
+  let options=$(prefix+"Options");options.replaceChildren();
+  activeQuestions[idx][1].forEach((answer,i)=>{
+   let btn=document.createElement("button");btn.textContent=answer;
+   btn.onclick=()=>{
+    if(locked||btn.disabled)return;
+    const correct=i===activeQuestions[idx][2];
+    if(prefix!=="build"){
+     if(correct){
+      locked=true;score++;btn.classList.add("correct-answer");
+      options.querySelectorAll("button").forEach(x=>x.disabled=true);
+      $(prefix+"Feedback").className="feedback good";
+      $(prefix+"Feedback").textContent=(wrongGuesses===0?"Correct on your first attempt! ":"Correct on your second attempt! ")+activeQuestions[idx][3];
+      advanceAfterAnswer();
+     }else{
+      wrongGuesses++;btn.classList.add("wrong-answer");btn.disabled=true;
+      if(wrongGuesses===1){
+       $(prefix+"Feedback").className="feedback bad";
+       $(prefix+"Feedback").textContent="Not quite. You have one more attempt.";
+      }else{
+       locked=true;
+       const correctBtn=options.children[activeQuestions[idx][2]];
+       correctBtn.classList.add("correct-answer");
+       options.querySelectorAll("button").forEach(x=>x.disabled=true);
+       $(prefix+"Feedback").className="feedback bad";
+       $(prefix+"Feedback").textContent="Two incorrect attempts. The correct answer is highlighted in green. "+activeQuestions[idx][3];
+       advanceAfterAnswer();
+      }
+     }
+    }else{
+     locked=true;btn.classList.add("chosen");
+     if(correct)score++;
+     $(prefix+"Feedback").className="feedback "+(correct?"good":"bad");
+     $(prefix+"Feedback").textContent=(correct?"Correct. ":"Not quite. ")+activeQuestions[idx][3];
+     $(nextId).disabled=false;
+     let ids=new Set(activeQuestions[idx][4]);ids.forEach(id=>revealedBuildNodes.add(id));
+     edges.filter(([a,c])=>ids.has(a)&&ids.has(c)).forEach(e=>{if(!revealedBuildEdges.some(([a,b])=>a===e[0]&&b===e[1]))revealedBuildEdges.push(e)});
+     drawBuild();
+    }
+   };options.append(btn);
+  });
+ }
+ $(nextId).onclick=()=>{if(idx<activeQuestions.length-1){idx++;show();}};
+ $(restartId).onclick=()=>{resetActivityComplete(prefix==="clinical"?"clinical":"apply");idx=0;score=0;activeQuestions=prepare();if(prefix==="build"){revealedBuildNodes=new Set(["C5","C6","C7","C8","T1"]);revealedBuildEdges=[];drawBuild()}show()};
+ show();
+}
+document.getElementById("nextApply").onclick=()=>{if(!activityComplete.apply)return;document.querySelector('.tab[data-tab="clinical"]').click()};
+quiz("case",cases);
+quiz("clinical",clinicalCases);
+// Root-specific pathways from the lab brachial plexus table.
+// The axillary nerve receives C5-C6 fibers, despite the posterior cord's broader contributions.
+const rootContributions={axillary:["C5","C6"],radial:["C5","C6","C7","C8","T1"],median:["C6","C7","C8","T1"],ulnar:["C8","T1"],musculo:["C5","C6","C7"]};
+const tracedNerves=new Set();
+function showTrace(id){
+ const allowed=new Set(rootContributions[id]);
+ const selected=[];
+ // Collect only routes beginning at an allowed root and ending at the selected nerve.
+ function walk(current,path,visited){
+  if(current===id){selected.push(...path);return;}
+  for(const edge of edges.filter(e=>e[0]===current)){
+   if(!visited.has(edge[1]))walk(edge[1],[...path,edge],new Set([...visited,edge[1]]));
+  }
+ }
+ for(const root of allowed)walk(root,[],new Set([root]));
+ const unique=[...new Map(selected.map(e=>[e.join("|"),e])).values()];
+ const nodesOnPath=new Set([id,...unique.flat()]);
+ mark(trace,nodesOnPath,unique);
+ tracedNerves.add(id);
+ if(tracedNerves.size===5){markActivityComplete("trace");document.getElementById("nextTrace").hidden=false;}
+ document.getElementById("traceName").textContent=byId[id].label+" nerve ("+rootContributions[id].join(", ")+")";
+ document.getElementById("traceDetail").textContent=details[id];
+}
+const traceHint=document.createElement("p");traceHint.className="small muted";traceHint.textContent="Click each of the five terminal nerves to complete Trace It.";document.getElementById("traceDetail").after(traceHint);
+document.getElementById("nextTrace").onclick=()=>{if(!activityComplete.trace)return;document.querySelector('.tab[data-tab="apply"]').click()};
+document.getElementById("nextExplore").onclick=()=>{if(!activityComplete.explore)return;document.querySelector('.tab[data-tab="build"]').click()};
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll("#content>section").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab))});
+</script></body></html>
